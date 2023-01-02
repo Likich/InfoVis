@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style type="text/css" media="screen, print">
+			body  { margin: 30px 50px; font-family: sans-serif; }
+			line, polyline, path { stroke: black; fill: none; }
+		</style>
+		<title>CO2 Greenhouse Gas Emissions</title>
+	</head>
+	<body>
+		<h1>CO2 Greenhouse Gas Emissions</h1>
+		<h2>Cumulated emissions</h2>
+
+		<script src="../vendor/d3-7.6.1/dist/d3.js"></script>
+		<script>
+
+var s = d3.formatSpecifier("f");
+s.precision = d3.precisionFixed(0.01);
+var f = d3.format(s);
+
+var body = d3.select("body");
+
+d3.tsv("../data/owid-co2-data.tsv", d => (
+	{
+		country:  d['#country'],
+		iso3:     d.iso_code,
+		year:    +d.year,
+		co2:     +d.co2,
+	}
+)).then(function(data) {	
+	body.selectAll('.row')
+		.data(d3.rollups(
+			data.filter(d => d.iso3),
+			v => d3.sum(v, d => d.co2),
+			d => d.country,
+		).sort((a, b) => b[1] - a[1]))
+		.enter().append('div')
+			.text((d, i) => `${i}. ${d[0]}, ${f(d[1])}`);
+});
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style type="text/css" media="screen, print">
+			body  { margin: 30px 50px; font-family: sans-serif; }
+			line, polyline, path { stroke: black; fill: none; }
+		</style>
+		<title>Co2 Greenhouse Gas Emissions</title>
+	</head>
+	<body>
+		<h1>CO2 Greenhouse Gas Emissions</h1>
+		<h2>Top 20 emitters for year </h2>
+
+		<script src="../vendor/d3-7.6.1/dist/d3.js"></script>
+		<script>
+
+var body = d3.select("body");
+
+Promise.all([
+	d3.tsv("../data/owid-co2-data.tsv", d => ({
+		country:   d['#country'],
+		iso3:      d.iso_code,
+		co2:      +d.co2,
+		year:     +d.year,
+	})),
+
+	d3.tsv("../data/iso3.tsv", d => ({
+		iso3:      d['#alpha3'],
+		country:   d.country,
+		subregion: d.subregion,
+		region:    d.region,
+	})),	
+	
+]).then(function(datasets) {
+	// map 3 letters country codes to countries
+	let countries = d3.index(datasets[1], c => c.iso3);
+	let data = datasets[0]; // co2 dataset
+	
+	// dropdown years
+	let dropdown = body.select('h2').append('select');
+	let years = [...new Set(data.map(d => d.year))].sort(d3.descending); // collect the years from data set
+	var options = dropdown.selectAll('option')
+		.data(years)
+		.enter().append('option')
+			.text(d => d)
+			.attr('value', d => d);
+
+	// build country list for given year
+	var country_list = body.append('ol');	
+	function update(year) {
+		var selection = country_list.selectAll('li')
+			.data(data
+				.filter(d => d.iso3)                         // keep only countries
+				.filter(d => d.year == year)                 // consider data for given year
+				.sort((a, b) => d3.descending(a.co2, b.co2)) // sort according to co2
+				.slice(0, 20)                                // keep top-20
+			)
+			.join('li')                                  // enter, update, exit at once
+				.text(d => `${countries.get(d.iso3).country} – ${d.co2}`);
+	}
+	
+	dropdown.on('change', e => {
+		update(dropdown.property('value'));
+	});
+	dropdown.dispatch('change'); // force initial update
+
+});
+
+		</script>
+	</body>
+</html>

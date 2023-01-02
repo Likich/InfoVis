@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<style type="text/css" media="screen, print">
+			body  { margin: 30px 50px; font-family: sans-serif; }
+			line, polyline, path { stroke: black; fill: none; }
+		</style>
+		<title>CO2 Greenhouse Gas Emissions</title>
+	</head>
+	<body>
+		<h1>CO2 Greenhouse Gas Emissions</h1>
+		<h2>Emissions time series</h2>
+
+		<script src="../vendor/d3-7.6.1/dist/d3.js"></script>
+		<script>
+
+var s = d3.formatSpecifier("f");
+s.precision = d3.precisionFixed(0.01);
+var f = d3.format(s);
+var parse_time = d3.timeParse("%Y");
+
+var body = d3.select("body");
+
+var margin = {top: 100, right: 150, bottom: 40, left: 100},
+	width = 800 - margin.left - margin.right,
+	height = 600 - margin.top - margin.bottom;
+
+var x = d3.scaleTime()
+	.range([0, width]);
+
+var y = d3.scaleLinear()
+	.range([height, 0]);
+
+var svg = d3.select('body').append('svg')
+	.attr('width', width + margin.left + margin.right)
+	.attr('height', height + margin.top + margin.bottom)
+	.append('g')
+		.attr('transform', `translate(${margin.left},${margin.top})`);
+
+d3.tsv("../data/owid-co2-data.tsv", d => (
+	{
+		country: d['#country'],
+		iso3:    d.iso_code,
+		year:    parse_time(d.year),
+		co2:    +d.co2,
+	}
+)).then(function(data) {
+	data = data.filter(d => d.iso3); // keep only countries (entries without iso3 code are regions)
+	x.domain(d3.extent(data, d => d.year));
+	year_a = new Date(x.domain()[1]);
+	y.domain([0, d3.max(data, d => d.co2)]).nice();
+
+	console.log(d3.groups( // group data by countries to get time series
+			data,
+			d => d.country
+		))
+	
+	var country = svg.selectAll('.country')
+		.data(d3.groups( // group data by countries to get time series
+			data,
+			d => d.country
+		))
+		.enter().append('g');
+	
+	country.append('path')
+		.datum(d => d[1].sort((a, b) => d3.ascending(a.year, b.year))) // do not rely on years being sorted in input
+		.attr('class', 'country')
+		.attr('d', d3.line()
+			.x(d => x(d.year))
+			.y(d => y(d.co2)));
+	country.append('text')
+		.attr('x', `${x(year_a)+10}`)
+		.attr('y', d => `${y(d[1].filter(e => e.year.getTime() == year_a.getTime())[0].co2)}`)
+		.text(d => d[0]);
+	
+	var xAxis = d3.axisBottom(x);
+	svg.append('g')
+		.attr('transform', `translate(0,${y(0)})`)
+		.call(xAxis);
+
+	var yAxis = d3.axisLeft(y);	    
+	svg.append('g')
+		.attr('transform', `translate(-10)`)
+		.call(yAxis);
+});
+
+		</script>
+	</body>
+</html>
