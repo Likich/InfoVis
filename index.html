@@ -7,10 +7,22 @@
 		<title>Co2 Greenhouse Gas Emissions</title>
 	</head>
     <body>
+
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <!--TODO REPLACE BY LOCAL D3-->
+
+</div>
 <div id="regions_div" style="width: 900px; height: 500px;"></div>
+<div id="info-window" style="display: none; position: absolute; top: 50px; left: 50px; width: 200px; height: 100px; background-color: white; border: 1px solid gray; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h3 id="info-country"></h3>
+    <button id="close-button">×</button>
+  </div>
+  <p>CO2 Emissions: <span id="info-co2-emissions"></span></p>
+</div>
+
+
 <script>
     google.charts.load('current', {
         'packages':['geochart'],
@@ -46,8 +58,35 @@
         var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
 
         chart.draw(data, options);
+
+        google.visualization.events.addListener(chart, 'select', function() {
+        var selection = chart.getSelection();
+        // check if a selection was made
+        if (selection.length > 0) {
+          // get the selected row
+          var row = selection[0].row;
+          // get the data for the selected row
+          var countryData = data.getValue(row, 0);
+          var co2EmissionsData = data.getValue(row, 1);
+          // do something with the data (e.g., show an info window)
+                // show the info window and set the content
+          document.getElementById("info-window").style.display = "block";
+          document.getElementById("info-country").innerHTML = countryData;
+          document.getElementById("info-co2-emissions").innerHTML = co2EmissionsData;
+          // console.log(countryData);
+          // console.log(co2EmissionsData);
+          // console.log(document.getElementById("info-window"));
+          // console.log(document.getElementById("info-country"));
+          // console.log(document.getElementById("info-co2-emissions"));
+          document.getElementById("close-button").addEventListener("click", function() {
+          document.getElementById("info-window").style.display = "none";
+        });
+  }
+});
+
       });
       }
 </script>
+
 </body>
 </html>
