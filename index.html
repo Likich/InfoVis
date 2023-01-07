@@ -15,14 +15,16 @@
 </div>
 <div id="regions_div" style="width: 900px; height: 500px;"></div>
 
-<div id="info-window" style="display: none; position: absolute; top: 50px; left: 50px; width: 200px; height: 200px; background-color: white; border: 1px solid gray; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
-  <div style="display: flex; justify-content: space-between; align-items: center;">
+<div id="info-window" style="display: none; position: absolute; top: 50px; left: 50px; width: 250px; height: 270px; background-color: white; border: 1px solid gray; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
+  <div style="display: flex; justify-content: space-between; align-items: center; font-family: sans-serif;
+  color: #333; font-size: 14px; border: 5px solid green;">
     <h3 id="info-country"></h3>
     <button id="close-button">×</button>
   </div>
-  <p>CO2 Emissions: <span id="info-co2-emissions"></span></p>
+  <p>CO2 Emissions (production-based): <span id="info-co2-emissions"></span> tonnes per person</p>
+  <p>CO2 Emissions (consumption-based): <span id="info-co2-emissions-consumption"></span> tonnes per person</p>
   <p>Population: <span id="info-population"></span></p>
-  <p>GDP for 2018 (previous year): <span id="info-gdp"></span></p>
+  <p>GDP for 2018 (previous year): <span id="info-gdp"></span>$</p>
 </div>
 
 
@@ -70,6 +72,29 @@
           if (data.length > 0) {
             var gdpData = data[0].gdp; // parse the GDP data as a number
             callback(gdpData);
+          }
+        });
+    }
+
+    function retrieveCo2Data(country, callback) {
+      d3.tsv("/course_files/data/owid-co2-data.tsv")
+        .row(
+          d => ({
+            country:   d['#country'],
+            iso3:      d.iso_code,
+            co2:      +d.co2,
+            trade_co2: +d.trade_co2,
+            co2_per_capita: +d.co2_per_capita,
+            year:     +d.year,
+            population: +d.population,
+            gdp: +d.gdp,
+            consumption_co2_per_capita: +d.consumption_co2_per_capita
+          }))
+        .get(function(data) {
+          data = data.filter(d => {return (d.year == 2019 && d.country == country);});
+          if (data.length > 0) {
+            var co2Data = data[0].consumption_co2_per_capita; // parse the GDP data as a number
+            callback(co2Data);
           }
         });
     }
@@ -122,6 +147,8 @@
           // get the data for the selected row
           var countryData = data.getValue(row, 0);
           var co2EmissionsData = data.getValue(row, 1);
+          // retrieve consumption based data
+          retrieveCo2Data(countryData, function(co2Data) {
           // retrieve the population data
           retrievePopulationData(countryData, function(populationData) {
             // retrieve the GDP data
@@ -132,10 +159,16 @@
               document.getElementById("info-co2-emissions").innerHTML = co2EmissionsData;
               document.getElementById("info-population").innerHTML = populationData;
               document.getElementById("info-gdp").innerHTML = gdpData;
+              document.getElementById("info-co2-emissions-consumption").innerHTML = co2Data;
               console.log(document.getElementById("info-gdp"));
+              document.getElementById("close-button").addEventListener("click", function() {
+              document.getElementById("info-window").style.display = "none";
+              });
             });
           });
+        });
         }
+      
       });
 
       });
