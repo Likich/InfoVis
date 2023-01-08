@@ -13,11 +13,41 @@
     ></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <!--TODO REPLACE BY LOCAL D3-->
+    <fieldset style="width: 285px; z-index: 1; position: absolute; left:50px;">
+      <legend>Select map attribute :</legend>
+
+      <div>
+        <input type="radio" id="co2" name="co2_types" value="co2" />
+        <label for="co2">Co2 emissions</label>
+      </div>
+
+      <div>
+        <input
+          type="radio"
+          id="co2_per_capita"
+          name="co2_types"
+          value="co2_per_capita"
+          checked
+        />
+        <label for="co2_per_capita">Co2 emissions per capita</label>
+      </div>
+
+      <div>
+        <input
+          type="radio"
+          id="co2_per_gdp"
+          name="co2_types"
+          value="co2_per_gdp"
+        />
+        <label for="co2_per_gdp">Co2 emissions per gdp</label>
+      </div>
+    </fieldset>
     <div
       id="regions_div"
       style="width: 1300px; height: 600px; margin: 50px"
     ></div>
     <script>
+      // defining variables
       let parseDate = d3.timeParse("%Y");
 
       var margin = { top: 50, right: 50, bottom: 50, left: 50 },
@@ -34,16 +64,40 @@
 
       var t = d3.scaleTime().range([0, width]);
 
-      // Google charts for map drawing
+      let loadedData,
+        years,
+        currentYear = new Date("2018");
+
+      // Loading google charts for map drawing
       google.charts.load("current", {
         packages: ["geochart"],
       });
       google.charts.setOnLoadCallback(loadData);
 
-      let YEAR = new Date("1950");
+      // Data management functions -------------------------------------
 
-      let loadedData;
-      let years;
+      // Data based on selected main attribute for map
+      function getDataOfMainAttributeForMap(data) {
+        const type = document.querySelector(
+          'input[name="co2_types"]:checked'
+        ).value;
+        switch (type) {
+          case "co2":
+            data = data.map((d) => [d.country, d.co2]);
+            data = [["Country", "co2Emission (million ton)"]].concat(data);
+            break;
+          case "co2_per_gdp":
+            data = data.map((d) => [d.country, d.co2_per_gdp]);
+            data = [["Country", "co2Emission/gdp (kg/dollar)"]].concat(data);
+            break;
+          default: // co2 per capita
+            data = data.map((d) => [d.country, d.co2_per_capita]);
+            data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
+            break;
+        }
+        return data;
+      }
+
       // default, first load
       function loadData() {
         d3.tsv("/course_files/data/owid-co2-data.tsv")
@@ -53,26 +107,24 @@
             co2: +d.co2,
             trade_co2: +d.trade_co2,
             co2_per_capita: +d.co2_per_capita,
+            co2_per_gdp: +d.co2_per_gdp,
             year: +d.year,
             population: +d.population,
           }))
           .get(function (data) {
+            // data
             loadedData = data;
             years = [...new Set(data.map((d) => d.year))]
               .map((d) => new Date(`${d}`))
               .sort((a, b) => a - b);
 
-            // mapping
             t.domain([d3.min(years), d3.max(years)]);
 
             const [t0, t1] = t.domain();
             data = data.filter((d) => {
-              // by default, max year value
-              return d.year == YEAR;
+              return d.year == currentYear;
             });
-            data = data.map((d) => [d.country, d.co2_per_capita]);
-
-            data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
+            data = getDataOfMainAttributeForMap(data);
 
             // draw map
             drawRegionsMap(data);
@@ -82,22 +134,38 @@
           });
       }
 
+      // Data filtering by observation year
       function filterData(year) {
+        currentYear = year;
         let data = loadedData.filter((d) => {
           return d.year == year;
         });
-        data = data.map((d) => [d.country, d.co2_per_capita]);
-
-        data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
+        data = getDataOfMainAttributeForMap(data);
 
         // draw map
         drawRegionsMap(data);
       }
 
+      // Map drawing -------------------------------------
+      function getMaxValueForMap() {
+        const type = document.querySelector(
+          'input[name="co2_types"]:checked'
+        ).value;
+        switch (type) {
+          case "co2":
+            if (currentYear >= 2010) return 8000;
+            else return 4000;
+          case "co2_per_gdp":
+            return 1.25;
+          default: // co2 per capita
+            return 27;
+        }
+      }
+
       function drawRegionsMap(data) {
         let chartData = google.visualization.arrayToDataTable(data);
         var options = {
-          colorAxis: { minValue: 0, maxValue: 27 },
+          colorAxis: { minValue: 0, maxValue: getMaxValueForMap() },
         };
 
         var chart = new google.visualization.GeoChart(
@@ -107,6 +175,7 @@
         chart.draw(chartData, options);
       }
 
+      // Years' slider -------------------------------------
       function drawYearSlider(years) {
         // year slider
         var t_slider = plot.append("g");
@@ -167,8 +236,19 @@
           // update data on map
           filterData(year);
         }
-        updateYear(YEAR);
+        updateYear(currentYear);
       }
+
+      // Radio input for co2 types ------------------------------
+      var radios = document.querySelectorAll(
+        'input[type=radio][name="co2_types"]'
+      );
+      radios.forEach((radio) =>
+        radio.addEventListener("change", () => {
+          // trigger change of main attribute
+          filterData(currentYear);
+        })
+      );
     </script>
   </body>
 </html>
