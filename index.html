@@ -1,53 +1,174 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<style type="text/css" media="screen, print">
-		</style>
-		<title>Co2 Greenhouse Gas Emissions</title>
-	</head>
-    <body>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<!--TODO REPLACE BY LOCAL D3-->
-<div id="regions_div" style="width: 900px; height: 500px;"></div>
-<script>
-    google.charts.load('current', {
-        'packages':['geochart'],
+  <head>
+    <meta charset="utf-8" />
+    <style type="text/css" media="screen, print"></style>
+    <title>Co2 Greenhouse Gas Emissions</title>
+  </head>
+
+  <body>
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!--TODO REPLACE BY LOCAL D3-->
+    <div
+      id="regions_div"
+      style="width: 900px; height: 500px; margin: 50px"
+    ></div>
+    <script>
+      let parseDate = d3.timeParse("%Y");
+
+      var margin = { top: 50, right: 50, bottom: 50, left: 50 },
+        width = 1200 - margin.left - margin.right,
+        height = 800 - margin.top - margin.bottom;
+
+      var svg = d3.select("body").append("svg");
+
+      var plot = svg
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      var t = d3.scaleTime().range([0, width]);
+
+      // Google charts for map drawing
+      google.charts.load("current", {
+        packages: ["geochart"],
       });
-      google.charts.setOnLoadCallback(drawRegionsMap);
+      google.charts.setOnLoadCallback(loadData);
 
-      function drawRegionsMap() {
+      let YEAR = new Date("1950");
 
-      d3.tsv("/course_files/data/owid-co2-data.tsv")
-      .row(
-        d => ({
-          country:   d['#country'],
-          iso3:      d.iso_code,
-          co2:      +d.co2,
-          trade_co2: +d.trade_co2,
-          co2_per_capita: +d.co2_per_capita,
-          year:     +d.year,
-          population: +d.population,
-	      }))
-      .get(function(data){
-        data = data.filter(d => {return (d.year == 2019);});
-        console.log(data);
-        // data = data.map(d=>([d.country, 1_000_000*d.co2/d.population]));
-        data = data.map(d=>([d.country, d.co2_per_capita]));
+      let loadedData;
+      let years;
+      // default, first load
+      function loadData() {
+        d3.tsv("/course_files/data/owid-co2-data.tsv")
+          .row((d) => ({
+            country: d["#country"],
+            iso3: d.iso_code,
+            co2: +d.co2,
+            trade_co2: +d.trade_co2,
+            co2_per_capita: +d.co2_per_capita,
+            year: +d.year,
+            population: +d.population,
+          }))
+          .get(function (data) {
+            loadedData = data;
+            years = [...new Set(data.map((d) => d.year))]
+              .map((d) => new Date(`${d}`))
+              .sort((a, b) => a - b);
+
+            // mapping
+            t.domain([d3.min(years), d3.max(years)]);
+
+            const [t0, t1] = t.domain();
+            data = data.filter((d) => {
+              // by default, max year value
+              return d.year == YEAR;
+            });
+            data = data.map((d) => [d.country, d.co2_per_capita]);
+
+            data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
+
+            // draw map
+            drawRegionsMap(data);
+
+            // draw year slider
+            drawYearSlider(years);
+          });
+      }
+
+      function filterData(year) {
+        let data = loadedData.filter((d) => {
+          return d.year == year;
+        });
+        data = data.map((d) => [d.country, d.co2_per_capita]);
 
         data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
-        data = google.visualization.arrayToDataTable(data);
 
+        // draw map
+        drawRegionsMap(data);
+      }
+
+      function drawRegionsMap(data) {
+        let chartData = google.visualization.arrayToDataTable(data);
         var options = {
-          colorAxis:{minValue:0, maxValue:27}
+          colorAxis: { minValue: 0, maxValue: 27 },
         };
 
-        var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+        var chart = new google.visualization.GeoChart(
+          document.getElementById("regions_div")
+        );
 
-        chart.draw(data, options);
-      });
+        chart.draw(chartData, options);
       }
-</script>
-</body>
+
+      function drawYearSlider(years) {
+        // year slider
+        var t_slider = plot.append("g");
+        t_slider.call(d3.axisBottom().scale(t).tickFormat(d3.timeFormat("%Y")));
+        function clickable(elem) {
+          return elem
+            .on("mouseover", (e) => elem.style("cursor", "pointer"))
+            .on("mouseout", (e) => elem.style("cursor", "default"));
+        }
+
+        const t_thumb = clickable(t_slider.append("g"));
+
+        t_thumb.append("line").attr("stroke", "black").attr("y2", "-10");
+        t_thumb
+          .append("circle")
+          .attr("stroke", "black")
+          .attr("fill", "lightgray")
+          .attr("r", "5");
+        t_thumb
+          .append("rect")
+          .attr("fill", "white")
+          .attr("fill-opacity", ".75")
+          .attr("x", "-13")
+          .attr("width", "26")
+          .attr("y", "-22")
+          .attr("height", "12");
+        t_thumb
+          .append("text")
+          .attr("fill", "black")
+          .attr("y", "-12")
+          .attr("text-anchor", "middle")
+          .text("…");
+        var t_x = 0;
+        t_thumb.call(
+          d3
+            .drag()
+            .on("start", () => {
+              t_x = d3.event.x;
+            })
+            .on("drag", () => {
+              t_x += d3.event.dx;
+              if (t_x < margin.left) {
+                t_x = 0;
+              } else if (t_x > width) {
+                t_x = width;
+              }
+              year = t.invert(t_x);
+              updateYear(year);
+            })
+        );
+
+        function updateYear(year) {
+          // on slider
+          t_thumb.attr("transform", `translate(${t(year)})`);
+          year = year.getFullYear();
+          t_thumb.select("text").text(year);
+
+          // update data on map
+          filterData(year);
+        }
+        updateYear(YEAR);
+      }
+    </script>
+  </body>
 </html>
