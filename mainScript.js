@@ -1,19 +1,20 @@
-// external loading, aka not for maps data 
+// external loading, aka not for maps data
 function retrievePopulationData(country, callback) {
   d3.tsv("/course_files/data/owid-co2-data.tsv")
-    .row(
-      d => ({
-        country: d['#country'],
-        iso3: d.iso_code,
-        co2: +d.co2,
-        trade_co2: +d.trade_co2,
-        co2_per_capita: +d.co2_per_capita,
-        year: +d.year,
-        population: +d.population,
-        gdp: +d.gdp
-      }))
+    .row((d) => ({
+      country: d["#country"],
+      iso3: d.iso_code,
+      co2: +d.co2,
+      trade_co2: +d.trade_co2,
+      co2_per_capita: +d.co2_per_capita,
+      year: +d.year,
+      population: +d.population,
+      gdp: +d.gdp,
+    }))
     .get(function (data) {
-      data = data.filter(d => { return (d.year == 2019 && d.country == country); });
+      data = data.filter((d) => {
+        return d.year == 2019 && d.country == country;
+      });
       if (data.length > 0) {
         var populationData = data[0].population;
         callback(populationData);
@@ -23,19 +24,20 @@ function retrievePopulationData(country, callback) {
 
 function retrieveGdpData(country, callback) {
   d3.tsv("/course_files/data/owid-co2-data.tsv")
-    .row(
-      d => ({
-        country: d['#country'],
-        iso3: d.iso_code,
-        co2: +d.co2,
-        trade_co2: +d.trade_co2,
-        co2_per_capita: +d.co2_per_capita,
-        year: +d.year,
-        population: +d.population,
-        gdp: +d.gdp
-      }))
+    .row((d) => ({
+      country: d["#country"],
+      iso3: d.iso_code,
+      co2: +d.co2,
+      trade_co2: +d.trade_co2,
+      co2_per_capita: +d.co2_per_capita,
+      year: +d.year,
+      population: +d.population,
+      gdp: +d.gdp,
+    }))
     .get(function (data) {
-      data = data.filter(d => { return (d.year == 2018 && d.country == country); });
+      data = data.filter((d) => {
+        return d.year == 2018 && d.country == country;
+      });
       if (data.length > 0) {
         var gdpData = data[0].gdp; // parse the GDP data as a number
         callback(gdpData);
@@ -45,20 +47,21 @@ function retrieveGdpData(country, callback) {
 
 function retrieveCo2Data(country, callback) {
   d3.tsv("/course_files/data/owid-co2-data.tsv")
-    .row(
-      d => ({
-        country: d['#country'],
-        iso3: d.iso_code,
-        co2: +d.co2,
-        trade_co2: +d.trade_co2,
-        co2_per_capita: +d.co2_per_capita,
-        year: +d.year,
-        population: +d.population,
-        gdp: +d.gdp,
-        consumption_co2_per_capita: +d.consumption_co2_per_capita
-      }))
+    .row((d) => ({
+      country: d["#country"],
+      iso3: d.iso_code,
+      co2: +d.co2,
+      trade_co2: +d.trade_co2,
+      co2_per_capita: +d.co2_per_capita,
+      year: +d.year,
+      population: +d.population,
+      gdp: +d.gdp,
+      consumption_co2_per_capita: +d.consumption_co2_per_capita,
+    }))
     .get(function (data) {
-      data = data.filter(d => { return (d.year == 2019 && d.country == country); });
+      data = data.filter((d) => {
+        return d.year == 2019 && d.country == country;
+      });
       if (data.length > 0) {
         var co2Data = data[0].consumption_co2_per_capita; // parse the GDP data as a number
         callback(co2Data);
@@ -66,11 +69,10 @@ function retrieveCo2Data(country, callback) {
     });
 }
 
-
 let parseDate = d3.timeParse("%Y");
 
 var margin = { top: 50, right: 50, bottom: 50, left: 50 },
-  width = 1150/2,
+  width = 1150 / 2,
   height = 800 - margin.top - margin.bottom;
 
 var svg = d3.select("#container-left").append("svg");
@@ -87,29 +89,45 @@ let loadedData,
   years,
   currentYear = new Date("2018");
 
-
-google.charts.load('current', {
-  'packages': ['geochart'],
+google.charts.load("current", {
+  packages: ["geochart"],
 });
 google.charts.setOnLoadCallback(loadData);
 
 function getDataOfMainAttributeForMap(data) {
-  const type = document.querySelector(
-    'input[name="co2_types"]:checked'
-  ).value;
+  const type = document.querySelector('input[name="co2_types"]:checked').value;
   switch (type) {
     case "co2":
       data = data.map((d) => [d.country, d.co2]);
-      data = [["Country", "co2Emission (million ton)"]].concat(data);
+      data = [["Country", "co2Emission (million tonnes)"]].concat(data);
       break;
     case "co2_per_gdp":
       data = data.map((d) => [d.country, d.co2_per_gdp]);
-      data = [["Country", "co2Emission/gdp (kg/dollar)"]].concat(data);
+      data = [["Country", "co2Emission/gdp (kg/dollar of GDP)"]].concat(data);
       break;
-    default: // co2 per capita
+    case "co2_per_capita":
       data = data.map((d) => [d.country, d.co2_per_capita]);
-      data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
+      data = [["Country", "co2Emission/capita (tonnes/person)"]].concat(data);
       break;
+    case "consumption_co2":
+      data = data.map((d) => [d.country, d.consumption_co2]);
+      data = [["Country", "co2Emission (million tonnes)"]].concat(data);
+      break;
+    case "consumption_co2_per_capita":
+      data = data.map((d) => [d.country, d.consumption_co2_per_capita]);
+      data = [["Country", "co2Emission/capita (tonnes/person)"]].concat(data);
+      break;
+    case "consumption_co2_per_gdp":
+      data = data.map((d) => [d.country, d.consumption_co2_per_gdp]);
+      data = [["Country", "co2Emission/capita (kg/dollar of GDP)"]].concat(
+        data
+      );
+      break;
+    default: // trade co2
+      data = data.map((d) => [d.country, d.trade_co2]);
+      data = [["Country", "trade co2Emission (million tonnes)"]].concat(
+        data
+      );
   }
   return data;
 }
@@ -126,6 +144,9 @@ function loadData() {
       co2_per_gdp: +d.co2_per_gdp,
       year: +d.year,
       population: +d.population,
+      consumption_co2: +d.consumption_co2,
+      consumption_co2_per_capita: +d.consumption_co2_per_capita,
+      consumption_co2_per_gdp: +d.consumption_co2_per_gdp,
     }))
     .get(function (data) {
       // data
@@ -163,18 +184,41 @@ function filterData(year) {
 }
 
 // Map drawing -------------------------------------
-function getMaxValueForMap() {
-  const type = document.querySelector(
-    'input[name="co2_types"]:checked'
-  ).value;
+function getMinMaxValueForMap() {
+  const type = document.querySelector('input[name="co2_types"]:checked').value;
   switch (type) {
     case "co2":
-      if (currentYear >= 2010) return 8000;
-      else return 4000;
+      if (currentYear >= 2010) return [0, 8000];
+      else return [0, 4000];
     case "co2_per_gdp":
-      return 1.25;
-    default: // co2 per capita
-      return 27;
+      return [0, 1.25];
+    case "co2_per_capita":
+      return [0, 27];
+    case "consumption_co2":
+      if (currentYear >= 2010) return [0, 8000];
+      else return [0, 4000];
+    case "consumption_co2_per_capita":
+      return [0, 27];
+    case "consumption_co2_per_gdp":
+      return [0, 1];
+    default: // trade co2
+      return [-500, 500];
+  }
+}
+
+function getColorValueForMap() {
+  const type = document.querySelector('input[name="co2_types"]:checked').value;
+  switch (type) {
+    case "co2":
+    case "co2_per_gdp":
+    case "co2_per_capita":
+      return ["green"];
+    case "consumption_co2":
+    case "consumption_co2_per_capita":
+    case "consumption_co2_per_gdp":
+      return ["blue"];
+    default: // trade
+      return ["red", "grey", "blue"];
   }
 }
 
@@ -244,9 +288,11 @@ function getMaxValueForMap() {
 //     });
 // }
 
-document.querySelector("#info-window #close-button").addEventListener("click", function () {
-  document.getElementById("info-window").style.display = "none";
-});
+document
+  .querySelector("#info-window #close-button")
+  .addEventListener("click", function () {
+    document.getElementById("info-window").style.display = "none";
+  });
 
 pieIds = ["", "", "", ""];
 
@@ -268,24 +314,31 @@ function addPie(countryData) {
   console.log(pieIds);
   let child = document.getElementById("pieGrid").children[currentIdx];
   let newChild = document.getElementById("pieTemplate").cloneNode(true);
-  newChild.setAttribute("id", "pie" + countryData)
+  newChild.setAttribute("id", "pie" + countryData);
   newChild.querySelector("p").innerHTML = countryData + " piechart placeholder";
   let b = document.createElement("button");
   b.setAttribute("id", "close-button");
-  newChild.appendChild(b)
-  newChild.querySelector("#close-button").addEventListener("click", function () {
-    pieIds[currentIdx] = "";
-    let n = document.getElementById("pieTemplate").cloneNode(true);
-    n.style.display = "inline";
-    document.getElementById("pieGrid").replaceChild(n, newChild);
-  });
+  newChild.appendChild(b);
+  newChild
+    .querySelector("#close-button")
+    .addEventListener("click", function () {
+      pieIds[currentIdx] = "";
+      let n = document.getElementById("pieTemplate").cloneNode(true);
+      n.style.display = "inline";
+      document.getElementById("pieGrid").replaceChild(n, newChild);
+    });
   newChild.style.display = "inline";
   document.getElementById("pieGrid").replaceChild(newChild, child);
 }
 function drawRegionsMap(data) {
   let chartData = google.visualization.arrayToDataTable(data);
+  const min_max = getMinMaxValueForMap();
   var options = {
-    colorAxis: { minValue: 0, maxValue: getMaxValueForMap() },
+    colorAxis: {
+      minValue: min_max[0],
+      maxValue: min_max[1],
+      colors: getColorValueForMap(),
+    },
   };
 
   var chart = new google.visualization.GeoChart(
@@ -293,7 +346,7 @@ function drawRegionsMap(data) {
   );
 
   chart.draw(chartData, options);
-  google.visualization.events.addListener(chart, 'select', function () {
+  google.visualization.events.addListener(chart, "select", function () {
     var selection = chart.getSelection();
     // check if a selection was made
     if (selection.length > 0) {
@@ -312,15 +365,18 @@ function drawRegionsMap(data) {
             // show the info window and set the content
             document.getElementById("info-window").style.display = "block";
             document.getElementById("info-country").innerHTML = countryData;
-            document.getElementById("info-co2-emissions").innerHTML = co2EmissionsData;
-            document.getElementById("info-population").innerHTML = populationData;
+            document.getElementById("info-co2-emissions").innerHTML =
+              co2EmissionsData;
+            document.getElementById("info-population").innerHTML =
+              populationData;
             document.getElementById("info-gdp").innerHTML = gdpData;
-            document.getElementById("info-co2-emissions-consumption").innerHTML = co2Data;
+            document.getElementById(
+              "info-co2-emissions-consumption"
+            ).innerHTML = co2Data;
           });
         });
       });
     }
-
   });
 }
 
@@ -390,9 +446,7 @@ function drawYearSlider(years) {
 
 console.log("non");
 // Radio input for co2 types ------------------------------
-var radios = document.querySelectorAll(
-  'input[type=radio][name="co2_types"]'
-);
+var radios = document.querySelectorAll('input[type=radio][name="co2_types"]');
 radios.forEach((radio) =>
   radio.addEventListener("change", () => {
     // trigger change of main attribute
