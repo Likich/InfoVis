@@ -57,11 +57,30 @@
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <!--TODO REPLACE BY LOCAL D3-->
 
-  </div>
+  <fieldset style="width: 285px; z-index: 1; position: absolute; left:50px;">
+    <legend>Select map attribute :</legend>
+
+    <div>
+      <input type="radio" id="co2" name="co2_types" value="co2" />
+      <label for="co2">Co2 emissions</label>
+    </div>
+
+    <div>
+      <input type="radio" id="co2_per_capita" name="co2_types" value="co2_per_capita" checked />
+      <label for="co2_per_capita">Co2 emissions per capita</label>
+    </div>
+
+    <div>
+      <input type="radio" id="co2_per_gdp" name="co2_types" value="co2_per_gdp" />
+      <label for="co2_per_gdp">Co2 emissions per gdp</label>
+    </div>
+  </fieldset>
   <div id="container-rows" style="display: flex;flex-direction: column;">
 
     <div id="container-sidebyside" style="display: flex;  align-items: center;">
-      <div id="regions_div" style="width: 50%;height: 90vh;"></div>
+      <div id="container-left" style="width: 50%;height: 90vh;">
+        <div id="regions_div" style="margin-top: 100px;"></div>
+      </div>
       <div id="right-window" style="width: 50%;background-color: rgb(91, 91, 214);height: 97vh;">
         <div id="infoChild">Piechart grid</div>
         <div id="pieGrid" class="container-grid">
@@ -73,7 +92,7 @@
       </div>
     </div>
   </div>
-  <div id="info-window">
+  <div id="info-window" style="z-index: 2;">
     <div class="inside-info-window">
       <h3 id="info-country"></h3>
       <button id="close-button">×</button>
@@ -89,7 +108,7 @@
   </div>
 
 
-  <script type="text/javascript" src="./mainScript.js"></script>
+  <script type="text/javascript" src="./mainScript.js?n=1"></script>
 
 </body>
 
