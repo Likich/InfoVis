@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <style type="text/css" media="screen, print"></style>
+    <link rel="stylesheet" href="style.css" />
     <title>Co2 Greenhouse Gas Emissions</title>
   </head>
 
@@ -64,96 +65,106 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <!--TODO REPLACE BY LOCAL D3-->
 
-    <fieldset
+    <div
+      id="options-div"
       style="
         display: flex;
-        width: 600px;
         z-index: 1;
         position: absolute;
         left: 50px;
+        align-items: center;
       "
     >
-      <legend>Select map attribute :</legend>
+      <fieldset style="display: flex; width: 600px">
+        <legend>Select map attribute :</legend>
 
-      <div id="fieldset-left">
-        <legend><br />Production-based CO2 emissions:</legend>
+        <div id="fieldset-left">
+          <legend><br />Production-based CO2 emissions:</legend>
 
-        <div>
-          <input type="radio" id="co2" name="co2_types" value="co2" />
-          <label for="co2">Total</label>
+          <div>
+            <input type="radio" id="co2" name="co2_types" value="co2" />
+            <label for="co2">Total</label>
+          </div>
+
+          <div>
+            <input
+              type="radio"
+              id="co2_per_capita"
+              name="co2_types"
+              value="co2_per_capita"
+              checked
+            />
+            <label for="co2_per_capita">Per capita</label>
+          </div>
+
+          <div>
+            <input
+              type="radio"
+              id="co2_per_gdp"
+              name="co2_types"
+              value="co2_per_gdp"
+            />
+            <label for="co2_per_gdp">Per GDP</label>
+          </div>
         </div>
+        <div class="vertical-line"></div>
+        <div id="fieldset-middle">
+          <legend><br />Consumption-based CO2 emissions:</legend>
 
-        <div>
-          <input
-            type="radio"
-            id="co2_per_capita"
-            name="co2_types"
-            value="co2_per_capita"
-            checked
-          />
-          <label for="co2_per_capita">Per capita</label>
-        </div>
+          <div>
+            <input
+              type="radio"
+              id="consumption_co2"
+              name="co2_types"
+              value="consumption_co2"
+            />
+            <label for="consumption_co2">Total</label>
+          </div>
 
-        <div>
-          <input
-            type="radio"
-            id="co2_per_gdp"
-            name="co2_types"
-            value="co2_per_gdp"
-          />
-          <label for="co2_per_gdp">Per GDP</label>
+          <div>
+            <input
+              type="radio"
+              id="consumption_co2_per_capita"
+              name="co2_types"
+              value="consumption_co2_per_capita"
+              checked
+            />
+            <label for="consumption_co2_per_capita">Per capita</label>
+          </div>
+
+          <div>
+            <input
+              type="radio"
+              id="consumption_co2_per_gdp"
+              name="co2_types"
+              value="consumption_co2_per_gdp"
+            />
+            <label for="consumption_co2_per_gdp">Per GDP</label>
+          </div>
         </div>
+        <div class="vertical-line"></div>
+        <div id="fiedlset-right">
+          <legend><br />CO2 emissions embedded in trade:</legend>
+          <div>
+            <br />
+            <input
+              type="radio"
+              id="trade_co2"
+              name="co2_types"
+              value="trade_co2"
+            />
+            <label for="trade_co2">Total</label>
+          </div>
+        </div>
+      </fieldset>
+      <div class="toggle-switch">
+        <label class="switch">
+          <input type="checkbox" />
+          <span class="slider round"></span>
+        </label>
+        <legend><br>Enable regions' mode</legend>
       </div>
-      <div class="vertical-line"></div>
-      <div id="fieldset-middle">
-        <legend><br />Consumption-based CO2 emissions:</legend>
-
-        <div>
-          <input
-            type="radio"
-            id="consumption_co2"
-            name="co2_types"
-            value="consumption_co2"
-          />
-          <label for="consumption_co2">Total</label>
-        </div>
-
-        <div>
-          <input
-            type="radio"
-            id="consumption_co2_per_capita"
-            name="co2_types"
-            value="consumption_co2_per_capita"
-            checked
-          />
-          <label for="consumption_co2_per_capita">Per capita</label>
-        </div>
-
-        <div>
-          <input
-            type="radio"
-            id="consumption_co2_per_gdp"
-            name="co2_types"
-            value="consumption_co2_per_gdp"
-          />
-          <label for="consumption_co2_per_gdp">Per GDP</label>
-        </div>
-      </div>
-      <div class="vertical-line"></div>
-      <div id="fiedlset-right">
-        <legend><br />CO2 emissions embedded in trade:</legend>
-        <div>
-          <br>
-          <input
-            type="radio"
-            id="trade_co2"
-            name="co2_types"
-            value="trade_co2"
-          />
-          <label for="trade_co2">Total</label>
-        </div>
-      </div>
-    </fieldset>
+    </div>
     <div id="container-rows" style="display: flex; flex-direction: column">
       <div id="container-sidebyside" style="display: flex; align-items: center">
         <div id="container-left" style="width: 50%; height: 90vh">
