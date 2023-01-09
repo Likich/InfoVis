@@ -1,115 +1,199 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <style type="text/css" media="screen, print"></style>
+    <title>Co2 Greenhouse Gas Emissions</title>
+  </head>
 
-<head>
-  <meta charset="utf-8">
-  <style type="text/css" media="screen, print">
+  <style>
+    .pie {
+      font-size: 40px;
+      font-family: sans-serif;
+      border: #333 2px solid;
+      display: flex;
+      padding: 20px;
+      height: 35vh;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container-grid {
+      display: grid;
+      margin-top: 20px;
+      grid-template-columns: 48% 48%;
+      grid-row: auto auto;
+      grid-column-gap: 20px;
+      grid-row-gap: 20px;
+    }
+
+    #info-window {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 50px;
+      width: 250px;
+      background-color: white;
+      border: 1px solid gray;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .inside-info-window {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: sans-serif;
+      color: #333;
+      font-size: 14px;
+      border: 5px solid green;
+    }
+
+    .vertical-line {
+      border-left: 3px solid green;
+      margin-right: 10px;
+      margin-top: 20px;
+      height: 100px;
+    }
   </style>
-  <title>Co2 Greenhouse Gas Emissions</title>
-</head>
 
-<style>
-  .pie {
-    font-size: 40px;
-    font-family: sans-serif;
-    border: #333 2px solid;
-    display: flex;
-    padding: 20px;
-    height: 35vh;
-    align-items: center;
-    justify-content: center;
-  }
+  <body>
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <!--TODO REPLACE BY LOCAL D3-->
 
-  .container-grid {
-    display: grid;
-    margin-top: 20px;
-    grid-template-columns: 48% 48%;
-    grid-row: auto auto;
-    grid-column-gap: 20px;
-    grid-row-gap: 20px;
-  }
+    <fieldset
+      style="
+        display: flex;
+        width: 600px;
+        z-index: 1;
+        position: absolute;
+        left: 50px;
+      "
+    >
+      <legend>Select map attribute :</legend>
 
-  #info-window {
-    display: none;
-    position: absolute;
-    top: 50px;
-    left: 50px;
-    width: 250px;
-    background-color: white;
-    border: 1px solid gray;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5)
-  }
+      <div id="fieldset-left">
+        <legend><br />Production-based CO2 emissions:</legend>
 
-  .inside-info-window {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: sans-serif;
-    color: #333;
-    font-size: 14px;
-    border: 5px solid green;
-  }
-</style>
+        <div>
+          <input type="radio" id="co2" name="co2_types" value="co2" />
+          <label for="co2">Total</label>
+        </div>
 
-<body>
+        <div>
+          <input
+            type="radio"
+            id="co2_per_capita"
+            name="co2_types"
+            value="co2_per_capita"
+            checked
+          />
+          <label for="co2_per_capita">Per capita</label>
+        </div>
 
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
-  <!--TODO REPLACE BY LOCAL D3-->
-
-  <fieldset style="width: 285px; z-index: 1; position: absolute; left:50px;">
-    <legend>Select map attribute :</legend>
-
-    <div>
-      <input type="radio" id="co2" name="co2_types" value="co2" />
-      <label for="co2">Co2 emissions</label>
-    </div>
-
-    <div>
-      <input type="radio" id="co2_per_capita" name="co2_types" value="co2_per_capita" checked />
-      <label for="co2_per_capita">Co2 emissions per capita</label>
-    </div>
-
-    <div>
-      <input type="radio" id="co2_per_gdp" name="co2_types" value="co2_per_gdp" />
-      <label for="co2_per_gdp">Co2 emissions per gdp</label>
-    </div>
-  </fieldset>
-  <div id="container-rows" style="display: flex;flex-direction: column;">
-
-    <div id="container-sidebyside" style="display: flex;  align-items: center;">
-      <div id="container-left" style="width: 50%;height: 90vh;">
-        <div id="regions_div" style="margin-top: 100px;"></div>
+        <div>
+          <input
+            type="radio"
+            id="co2_per_gdp"
+            name="co2_types"
+            value="co2_per_gdp"
+          />
+          <label for="co2_per_gdp">Per gdp</label>
+        </div>
       </div>
-      <div id="right-window" style="width: 50%;background-color: rgb(91, 91, 214);height: 97vh;">
-        <div id="infoChild">Piechart grid</div>
-        <div id="pieGrid" class="container-grid">
-          <div class="pie">A</div>
-          <div class="pie">B</div>
-          <div class="pie">C</div>
-          <div class="pie">D</div>
+      <div class="vertical-line"></div>
+      <div id="fieldset-middle">
+        <legend><br />Consumption-based CO2 emissions:</legend>
+
+        <div>
+          <input
+            type="radio"
+            id="consumption_co2"
+            name="co2_types"
+            value="consumption_co2"
+          />
+          <label for="consumption_co2">Total</label>
+        </div>
+
+        <div>
+          <input
+            type="radio"
+            id="consumption_co2_per_capita"
+            name="co2_types"
+            value="consumption_co2_per_capita"
+            checked
+          />
+          <label for="consumption_co2_per_capita">Per capita</label>
+        </div>
+
+        <div>
+          <input
+            type="radio"
+            id="consumption_co2_per_gdp"
+            name="co2_types"
+            value="consumption_co2_per_gdp"
+          />
+          <label for="consumption_co2_per_gdp">Per gdp</label>
+        </div>
+      </div>
+      <div class="vertical-line"></div>
+      <div id="fiedlset-right">
+        <legend><br />CO2 emissions embedded in trade:</legend>
+        <div>
+          <br>
+          <input
+            type="radio"
+            id="trade_co2"
+            name="co2_types"
+            value="trade_co2"
+          />
+          <label for="trade_co2">Total</label>
+        </div>
+      </div>
+    </fieldset>
+    <div id="container-rows" style="display: flex; flex-direction: column">
+      <div id="container-sidebyside" style="display: flex; align-items: center">
+        <div id="container-left" style="width: 50%; height: 90vh">
+          <div id="regions_div" style="margin-top: 150px"></div>
+        </div>
+        <div
+          id="right-window"
+          style="width: 50%; background-color: rgb(91, 91, 214); height: 97vh"
+        >
+          <div id="infoChild">Piechart grid</div>
+          <div id="pieGrid" class="container-grid">
+            <div class="pie">A</div>
+            <div class="pie">B</div>
+            <div class="pie">C</div>
+            <div class="pie">D</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div id="info-window" style="z-index: 2;">
-    <div class="inside-info-window">
-      <h3 id="info-country"></h3>
-      <button id="close-button">×</button>
+    <div id="info-window" style="z-index: 2">
+      <div class="inside-info-window">
+        <h3 id="info-country"></h3>
+        <button id="close-button">×</button>
+      </div>
+      <p>
+        CO2 Emissions (production-based):
+        <span id="info-co2-emissions"></span> tonnes per person
+      </p>
+      <p>
+        CO2 Emissions (consumption-based):
+        <span id="info-co2-emissions-consumption"></span> tonnes per person
+      </p>
+      <p>Population: <span id="info-population"></span></p>
+      <p>GDP for 2018 (previous year): <span id="info-gdp"></span>$</p>
     </div>
-    <p>CO2 Emissions (production-based): <span id="info-co2-emissions"></span> tonnes per person</p>
-    <p>CO2 Emissions (consumption-based): <span id="info-co2-emissions-consumption"></span> tonnes per person</p>
-    <p>Population: <span id="info-population"></span></p>
-    <p>GDP for 2018 (previous year): <span id="info-gdp"></span>$</p>
-  </div>
 
-  <div id="pieTemplate" class="pie" style="display: none;">
-    <p></p>
-  </div>
+    <div id="pieTemplate" class="pie" style="display: none">
+      <p></p>
+    </div>
 
-
-  <script type="text/javascript" src="./mainScript.js?n=1"></script>
-
-</body>
-
+    <script type="text/javascript" src="./mainScript.js?n=1"></script>
+  </body>
 </html>
