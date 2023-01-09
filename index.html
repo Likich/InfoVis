@@ -1,179 +1,96 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<style type="text/css" media="screen, print">
-		</style>
-		<title>Co2 Greenhouse Gas Emissions</title>
-	</head>
-    <body>
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<!--TODO REPLACE BY LOCAL D3-->
+<head>
+  <meta charset="utf-8">
+  <style type="text/css" media="screen, print">
+  </style>
+  <title>Co2 Greenhouse Gas Emissions</title>
+</head>
 
-</div>
-<div id="regions_div" style="width: 900px; height: 500px;"></div>
+<style>
+  .pie {
+    font-size: 40px;
+    font-family: sans-serif;
+    border: #333 2px solid;
+    display: flex;
+    padding: 20px;
+    height: 35vh;
+    align-items: center;
+    justify-content: center;
+  }
 
-<div id="info-window" style="display: none; position: absolute; top: 50px; left: 50px; width: 250px; height: 270px; background-color: white; border: 1px solid gray; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);">
-  <div style="display: flex; justify-content: space-between; align-items: center; font-family: sans-serif;
-  color: #333; font-size: 14px; border: 5px solid green;">
-    <h3 id="info-country"></h3>
-    <button id="close-button">×</button>
+  .container-grid {
+    display: grid;
+    margin-top: 20px;
+    grid-template-columns: 48% 48%;
+    grid-row: auto auto;
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+  }
+
+  #info-window {
+    display: none;
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 250px;
+    background-color: white;
+    border: 1px solid gray;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5)
+  }
+
+  .inside-info-window {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: sans-serif;
+    color: #333;
+    font-size: 14px;
+    border: 5px solid green;
+  }
+</style>
+
+<body>
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <!--TODO REPLACE BY LOCAL D3-->
+
   </div>
-  <p>CO2 Emissions (production-based): <span id="info-co2-emissions"></span> tonnes per person</p>
-  <p>CO2 Emissions (consumption-based): <span id="info-co2-emissions-consumption"></span> tonnes per person</p>
-  <p>Population: <span id="info-population"></span></p>
-  <p>GDP for 2018 (previous year): <span id="info-gdp"></span>$</p>
-</div>
+  <div id="container-rows" style="display: flex;flex-direction: column;">
+
+    <div id="container-sidebyside" style="display: flex;  align-items: center;">
+      <div id="regions_div" style="width: 50%;height: 90vh;"></div>
+      <div id="right-window" style="width: 50%;background-color: rgb(91, 91, 214);height: 97vh;">
+        <div id="infoChild">Piechart grid</div>
+        <div id="pieGrid" class="container-grid">
+          <div class="pie">A</div>
+          <div class="pie">B</div>
+          <div class="pie">C</div>
+          <div class="pie">D</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="info-window">
+    <div class="inside-info-window">
+      <h3 id="info-country"></h3>
+      <button id="close-button">×</button>
+    </div>
+    <p>CO2 Emissions (production-based): <span id="info-co2-emissions"></span> tonnes per person</p>
+    <p>CO2 Emissions (consumption-based): <span id="info-co2-emissions-consumption"></span> tonnes per person</p>
+    <p>Population: <span id="info-population"></span></p>
+    <p>GDP for 2018 (previous year): <span id="info-gdp"></span>$</p>
+  </div>
+
+  <div id="pieTemplate" class="pie" style="display: none;">
+    <p></p>
+  </div>
 
 
-
-<script>
-
-// external loading, aka not for maps data 
-    function retrievePopulationData(country, callback) {
-      d3.tsv("/course_files/data/owid-co2-data.tsv")
-        .row(
-          d => ({
-            country:   d['#country'],
-            iso3:      d.iso_code,
-            co2:      +d.co2,
-            trade_co2: +d.trade_co2,
-            co2_per_capita: +d.co2_per_capita,
-            year:     +d.year,
-            population: +d.population,
-            gdp: +d.gdp
-          }))
-        .get(function(data) {
-          data = data.filter(d => {return (d.year == 2019 && d.country == country);});
-          if (data.length > 0) {
-            var populationData = data[0].population;
-            callback(populationData);
-          }
-        });
-    }
-
-    function retrieveGdpData(country, callback) {
-      d3.tsv("/course_files/data/owid-co2-data.tsv")
-        .row(
-          d => ({
-            country:   d['#country'],
-            iso3:      d.iso_code,
-            co2:      +d.co2,
-            trade_co2: +d.trade_co2,
-            co2_per_capita: +d.co2_per_capita,
-            year:     +d.year,
-            population: +d.population,
-            gdp: +d.gdp
-          }))
-        .get(function(data) {
-          data = data.filter(d => {return (d.year == 2018 && d.country == country);});
-          if (data.length > 0) {
-            var gdpData = data[0].gdp; // parse the GDP data as a number
-            callback(gdpData);
-          }
-        });
-    }
-
-    function retrieveCo2Data(country, callback) {
-      d3.tsv("/course_files/data/owid-co2-data.tsv")
-        .row(
-          d => ({
-            country:   d['#country'],
-            iso3:      d.iso_code,
-            co2:      +d.co2,
-            trade_co2: +d.trade_co2,
-            co2_per_capita: +d.co2_per_capita,
-            year:     +d.year,
-            population: +d.population,
-            gdp: +d.gdp,
-            consumption_co2_per_capita: +d.consumption_co2_per_capita
-          }))
-        .get(function(data) {
-          data = data.filter(d => {return (d.year == 2019 && d.country == country);});
-          if (data.length > 0) {
-            var co2Data = data[0].consumption_co2_per_capita; // parse the GDP data as a number
-            callback(co2Data);
-          }
-        });
-    }
-
-    
-    google.charts.load('current', {
-        'packages':['geochart'],
-      });
-      google.charts.setOnLoadCallback(drawRegionsMap);
-
-      function drawRegionsMap() {
-
-      d3.tsv("/course_files/data/owid-co2-data.tsv")
-      .row(
-        d => ({
-          country:   d['#country'],
-          iso3:      d.iso_code,
-          co2:      +d.co2,
-          trade_co2: +d.trade_co2,
-          co2_per_capita: +d.co2_per_capita,
-          year:     +d.year,
-          population: +d.population,
-          gdp: +d.gdp,
-	      }))
-      .get(function(data){
-        data = data.filter(d => {return (d.year == 2019);});
-        console.log(data);
-        // data = data.map(d=>([d.country, 1_000_000*d.co2/d.population]));
-        // data = data.map(d=>([d.country, d.co2_per_capita]));
-        data = data.map(d=>([d.country, d.co2_per_capita]));
-
-        // data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
-        data = [["Country", "co2Emission/capita (ton/hab)"]].concat(data);
-        data = google.visualization.arrayToDataTable(data);
-
-        var options = {
-          colorAxis:{minValue:0, maxValue:27}
-        };
-
-        var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
-
-        chart.draw(data, options);
-
-        google.visualization.events.addListener(chart, 'select', function() {
-        var selection = chart.getSelection();
-        // check if a selection was made
-        if (selection.length > 0) {
-          // get the selected row
-          var row = selection[0].row;
-          // get the data for the selected row
-          var countryData = data.getValue(row, 0);
-          var co2EmissionsData = data.getValue(row, 1);
-          // retrieve consumption based data
-          retrieveCo2Data(countryData, function(co2Data) {
-          // retrieve the population data
-          retrievePopulationData(countryData, function(populationData) {
-            // retrieve the GDP data
-            retrieveGdpData(countryData, function(gdpData) {
-              // show the info window and set the content
-              document.getElementById("info-window").style.display = "block";
-              document.getElementById("info-country").innerHTML = countryData;
-              document.getElementById("info-co2-emissions").innerHTML = co2EmissionsData;
-              document.getElementById("info-population").innerHTML = populationData;
-              document.getElementById("info-gdp").innerHTML = gdpData;
-              document.getElementById("info-co2-emissions-consumption").innerHTML = co2Data;
-              console.log(document.getElementById("info-gdp"));
-              document.getElementById("close-button").addEventListener("click", function() {
-              document.getElementById("info-window").style.display = "none";
-              });
-            });
-          });
-        });
-        }
-      
-      });
-
-      });
-      }
-</script>
+  <script type="text/javascript" src="./mainScript.js"></script>
 
 </body>
+
 </html>
