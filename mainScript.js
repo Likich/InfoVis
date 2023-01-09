@@ -95,6 +95,7 @@ google.charts.load("current", {
 google.charts.setOnLoadCallback(loadData);
 
 function getDataOfMainAttributeForMap(data) {
+  const regionsModeEnabled = document.querySelector(".regions_mode").checked;
   const type = document.querySelector('input[name="co2_types"]:checked').value;
   switch (type) {
     case "co2":
@@ -125,9 +126,7 @@ function getDataOfMainAttributeForMap(data) {
       break;
     default: // trade co2
       data = data.map((d) => [d.country, d.trade_co2]);
-      data = [["Country", "trade co2Emission (million tonnes)"]].concat(
-        data
-      );
+      data = [["Country", "trade co2Emission (million tonnes)"]].concat(data);
   }
   return data;
 }
@@ -444,7 +443,6 @@ function drawYearSlider(years) {
   updateYear(currentYear);
 }
 
-console.log("non");
 // Radio input for co2 types ------------------------------
 var radios = document.querySelectorAll('input[type=radio][name="co2_types"]');
 radios.forEach((radio) =>
