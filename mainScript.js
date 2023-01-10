@@ -292,6 +292,11 @@ document
   .addEventListener("click", function () {
     document.getElementById("info-window").style.display = "none";
   });
+document
+  .querySelector("#info-window2 #close-button")
+  .addEventListener("click", function () {
+  document.getElementById("info-window2").style.display = "none";
+  });
 
 pieIds = ["", "", "", ""];
 
@@ -329,6 +334,8 @@ function addPie(countryData) {
   newChild.style.display = "inline";
   document.getElementById("pieGrid").replaceChild(newChild, child);
 }
+let clickCount = 0;
+
 function drawRegionsMap(data) {
   let chartData = google.visualization.arrayToDataTable(data);
   const min_max = getMinMaxValueForMap();
@@ -349,6 +356,7 @@ function drawRegionsMap(data) {
     var selection = chart.getSelection();
     // check if a selection was made
     if (selection.length > 0) {
+      clickCount++;
       // get the selected row
       var row = selection[0].row;
       // get the data for the selected row
@@ -361,24 +369,36 @@ function drawRegionsMap(data) {
         retrievePopulationData(countryData, function (populationData) {
           // retrieve the GDP data
           retrieveGdpData(countryData, function (gdpData) {
-            // show the info window and set the content
-            document.getElementById("info-window").style.display = "block";
-            document.getElementById("info-country").innerHTML = countryData;
-            document.getElementById("info-co2-emissions").innerHTML =
-              co2EmissionsData;
-            document.getElementById("info-population").innerHTML =
-              populationData;
-            document.getElementById("info-gdp").innerHTML = gdpData;
-            document.getElementById(
-              "info-co2-emissions-consumption"
-            ).innerHTML = co2Data;
+            // show the appropriate info window and set the content
+            if (clickCount % 2 === 0) {
+              document.getElementById("info-window2").style.display = "block";
+              document.getElementById("info-country2").innerHTML = countryData;
+              document.getElementById("info-co2-emissions2").innerHTML =
+                co2EmissionsData;
+              document.getElementById("info-population2").innerHTML =
+                populationData;
+              document.getElementById("info-gdp2").innerHTML = gdpData;
+              document.getElementById(
+                "info-co2-emissions-consumption2"
+              ).innerHTML = co2Data;
+            } else {
+              document.getElementById("info-window").style.display = "block";
+              document.getElementById("info-country").innerHTML = countryData;
+              document.getElementById("info-co2-emissions").innerHTML =
+                co2EmissionsData;
+              document.getElementById("info-population").innerHTML =
+                populationData;
+              document.getElementById("info-gdp").innerHTML = gdpData;
+              document.getElementById(
+                "info-co2-emissions-consumption"
+              ).innerHTML = co2Data;
+            }
           });
         });
       });
     }
   });
 }
-
 // Years' slider -------------------------------------
 function drawYearSlider(years) {
   // year slider
