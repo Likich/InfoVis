@@ -31,8 +31,19 @@
     #info-window {
       display: none;
       position: absolute;
-      top: 50px;
+      top: 1300px;
       left: 50px;
+      width: 250px;
+      background-color: white;
+      border: 1px solid gray;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    }
+    
+    #info-window2 {
+      display: none;
+      position: absolute;
+      top: 1300px;
+      left: 400px;
       width: 250px;
       background-color: white;
       border: 1px solid gray;
@@ -46,7 +57,7 @@
       font-family: sans-serif;
       color: #333;
       font-size: 14px;
-      border: 5px solid green;
+      border: 5px solid gray;
     }
 
     .vertical-line {
@@ -199,6 +210,22 @@
       </p>
       <p>Population: <span id="info-population"></span></p>
       <p>GDP for 2018 (previous year): <span id="info-gdp"></span>$</p>
+    </div>
+    <div id="info-window2" style="z-index: 2">
+      <div class="inside-info-window">
+        <h3 id="info-country2"></h3>
+        <button id="close-button">×</button>
+      </div>
+      <p>
+        CO2 Emissions (production-based):
+        <span id="info-co2-emissions2"></span> tonnes per person
+      </p>
+      <p>
+        CO2 Emissions (consumption-based):
+        <span id="info-co2-emissions-consumption2"></span> tonnes per person
+      </p>
+      <p>Population: <span id="info-population2"></span></p>
+      <p>GDP for 2018 (previous year): <span id="info-gdp2"></span>$</p>
     </div>
 
     <div id="pieTemplate" class="pie" style="display: none">
